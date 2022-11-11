@@ -1,5 +1,5 @@
 from tkinter import Image
-from skimage import *
+from skimage.morphology import *
 import copy
 import cv2;
 
@@ -8,28 +8,29 @@ import cv2;
 cv2.namedWindow("output", cv2.WINDOW_NORMAL) 
 
 image = cv2.imread('projeto_PDI/images-base/JPCNN001.png')
+image_real = copy.deepcopy(image)
 
-# cv2.rectangle(img=image, pt1=(680, 620), pt2=(820, 760), color=(0,0,0), thickness=2)
+cv2.rectangle(img=image_real, pt1=(680, 620), pt2=(820, 760), color=(0,0,0), thickness=2)
 subimg1 = image[680:820, 620:760]
 
 # x: 2 - 3 | y: 4 - 5
-# cv2.rectangle(img=image, pt1=(260, 760), pt2=(400, 900), color=(0,0,0), thickness=2)
+cv2.rectangle(img=image_real, pt1=(260, 760), pt2=(400, 900), color=(0,0,0), thickness=2)
 subimg2 = image[260:400, 760:900]
 
 # x: 4 - 5 | y: 4 - 5
-# cv2.rectangle(img=image, pt1=(540, 760), pt2=(680, 900), color=(0,0,0), thickness=2)
+cv2.rectangle(img=image_real, pt1=(540, 760), pt2=(680, 900), color=(0,0,0), thickness=2)
 subimg3 = image[540:680, 760:900]
 
 # x: 3 - 4 | y: 5 - 6
-# cv2.rectangle(img=image, pt1=(400, 900), pt2=(540, 1040), color=(0,0,0), thickness=2)
+cv2.rectangle(img=image_real, pt1=(400, 900), pt2=(540, 1040), color=(0,0,0), thickness=2)
 subimg4 = image[400:540, 900:1040]
 
 # x: 4 - 5 | y: 6 - 7
-# cv2.rectangle(img=image, pt1=(540, 1040), pt2=(680, 1180), color=(0,0,0), thickness=2)
+cv2.rectangle(img=image_real, pt1=(540, 1040), pt2=(680, 1180), color=(0,0,0), thickness=2)
 subimg5 = image[540:680, 1040:1180]
 
 # x: 3 - 4 | y: 7 - 8
-# cv2.rectangle(img=image, pt1=(400, 1180), pt2=(540, 1320), color=(0,0,0), thickness=2)
+cv2.rectangle(img=image_real, pt1=(400, 1180), pt2=(540, 1320), color=(0,0,0), thickness=2)
 subimg6 = image[400:540, 1180:1320]
 
 grayScaleAreas = sorted([
@@ -80,22 +81,29 @@ for i in range(50, 1998):
 # REMOÇÃO DE RUÍDO APÓS O PREENCHIMENTO
 imagem_ruido = cv2.subtract(imagem_binarizada_inicial, imagem_binarizada_preenchida)
 
-disco_60 = cv2.getStructuringElement
-
 # REALIZAÇÃO DA DILATAÇÃO COM 3 ELEMENTOS ESTRUTURANTES
 imagem_ruido_dilatado = copy.deepcopy(imagem_ruido)
 
-imagem_ruido_dilatado = cv2.dilate(imagem_ruido_dilatado, cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (120, 120)))
-imagem_ruido_dilatado = cv2.dilate(imagem_ruido_dilatado, cv2.getStructuringElement(cv2.MORPH_RECT, (30, 10)))
-imagem_ruido_dilatado = cv2.dilate(imagem_ruido_dilatado, cv2.getStructuringElement(cv2.MORPH_RECT, (10, 30)))
+imagem_ruido_dilatado = cv2.dilate(imagem_ruido_dilatado, disk(60))
+imagem_ruido_dilatado = cv2.dilate(imagem_ruido_dilatado, rectangle(30, 10))
+imagem_ruido_dilatado = cv2.dilate(imagem_ruido_dilatado, rectangle(10, 30))
 
 # OBTENÇÃO DA IMAGEM RESULTADO PELA SUBTRAÇÃO DA IMAGEM BINARIZADA PELO RUIDO DILATADO
 imagem_subtraida = cv2.subtract(imagem_binarizada_inicial, imagem_ruido_dilatado)
 
 # REALIZAÇÃO DE OPERAÇÕES MORFOLÓGICAS DE FECHAMENTO
-#imagem_subtraida = cv2.morphologyEx(imagem_subtraida, cv2.MORPH_CLOSE, cv2.getStructuringElement(cv2.MORPH_RECT, (35, 35)))
-#imagem_subtraida = cv2.dilate(imagem_subtraida, cv2.getStructuringElement(cv2.MORPH_RECT, (35, 35)))
-#imagem_subtraida = cv2.morphologyEx(imagem_subtraida, cv2.MORPH_CLOSE, cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (70, 70)))
+imagem_subtraida = cv2.morphologyEx(imagem_subtraida, cv2.MORPH_CLOSE, square(35))
+imagem_subtraida = cv2.morphologyEx(imagem_subtraida, cv2.MORPH_CLOSE, disk(35))
+
+# REALIZAÇÃO DO AJUSTE DAS REGIÕES ACIMA DAS BASES PULMONARES
+imagem_subtraida[0:1638, 0:2048] = cv2.dilate(imagem_subtraida[0:1638, 0:2048], rectangle(40, 2))
+imagem_subtraida[0:1638, 0:2048] = cv2.dilate(imagem_subtraida[0:1638, 0:2048], octagon(17, 17))
+
+imagem_subtraida = cv2.morphologyEx(imagem_subtraida, cv2.MORPH_CLOSE, disk(25))
 
 cv2.imshow("output", imagem_subtraida)
+
+#cv2.imshow("output", image)
+#cv2.imshow("output", imagem_binarizada_inicial)
+
 cv2.waitKey(0)
