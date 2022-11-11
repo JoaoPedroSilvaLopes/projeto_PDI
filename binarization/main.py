@@ -1,10 +1,21 @@
+from functions import *
+from skimage.morphology import *
 import cv2;
 
-img = cv2.imread('images-base/JPCLN001.png')
+# ESCOLHER IMAGEM
+image_name = 'JPCNN001'
 
-th, img_th = cv2.threshold(img, 128, 255, cv2.THRESH_BINARY_INV)
+cv2.namedWindow("output", cv2.WINDOW_NORMAL) 
+image = cv2.imread(f'projeto_PDI/images-base/{image_name}.png')
 
-print(th)
-# 128.0
+# REALIZAÇÃO DO PROCESSAMENTO DA IMAGEM
+imagem_binarizada = binarização(image)
+imagem_preenchida = preenchimento_imagem(imagem_binarizada)
+imagem_subtraida = remocao_de_ruido(imagem_binarizada, imagem_preenchida)
+imagem_final = operacoes_morfologicas(imagem_subtraida)
 
-cv2.imwrite('images-result/JPCLN001.png', img_th)
+# EXIBIÇÃO DA IMAGEM
+cv2.imshow("output", imagem_final)
+
+cv2.imwrite(f'projeto_PDI/images-result/{image_name}.png', imagem_final)
+cv2.waitKey(0)
