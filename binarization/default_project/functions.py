@@ -30,32 +30,32 @@ def binarização(img_real):
   limiar_m = round(sum(grayScaleAreas) / 4)
 
   # BINARIZAÇÃO
-  th, img = cv2.threshold(img, limiar_m, 255, cv2.THRESH_BINARY_INV)
+  img = cv2.threshold(img, limiar_m, 255, cv2.THRESH_BINARY_INV)
 
-  return img
+  return img[1]
 
 def preenchimento_imagem(img_inicial):
   img = copy.deepcopy(img_inicial)
 
   # ETAPA TORNAR 50px DAS BORDAS EM PIXEIS PRETOS
-  img[0:50, 0:2048] = (0, 0, 0)
-  img[0:2048, 0:50] = (0, 0, 0)
-  img[0:2048, 1998:2048] = (0, 0, 0)
-  img[1998:2048, 0:2048] = (0, 0, 0)
+  img[0:50, 0:2048] = 0
+  img[0:2048, 0:50] = 0
+  img[0:2048, 1998:2048] = 0
+  img[1998:2048, 0:2048] = 0
 
   # PREECHIMENTO DOS PIXELS BRANCOS PARA PIXELS PRETOS
   for i in range(50, 1998):
     for j in range(50, 1998):
-      if img[j, i, 0] == 0:
+      if img[j, i] == 0:
         break
       else:
-        img[j, i]=[0,0,0]
+        img[j, i] = 0
     
     for j in reversed(range(50, 1998)):
-      if img[j, i, 0] == 0:
+      if img[j, i] == 0:
         break
       else:
-        img[j, i]=[0,0,0]
+        img[j, i] = 0
     
   return img
 
