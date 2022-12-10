@@ -2,6 +2,14 @@ from skimage.morphology import *
 import copy
 import cv2;
 
+def processar_imagem(image):
+  binarizada = binarização(image)
+  preenchida = preenchimento_imagem(binarizada)
+  subtraida = remocao_de_ruido(binarizada, preenchida)
+  imagem_final = operacoes_morfologicas(subtraida)
+
+  return imagem_final
+
 def binarização(img_real):
   img = copy.deepcopy(img_real)
 
