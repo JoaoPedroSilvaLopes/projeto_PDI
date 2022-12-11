@@ -12,32 +12,32 @@ def processar_imagem_melhorada(image):
 
 # ESTA OK
 def pre_processamento(img):
-  # Filter using contour area and remove small noise
-  cnts = cv2.findContours(img[0:512, 0:2048], cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
+  # FILTRAR USANDO CONTORNOS E REMOVENDO CONTORNOS PEQUENOS
+  cnts = cv2.findContours(img, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
   cnts = cnts[0] if len(cnts) == 2 else cnts[1]
+
   for c in cnts:
     area = cv2.contourArea(c)
-    if area < 32000:
+    if area < 49000:
       cv2.drawContours(img, [c], -1, (0), -1)
 
-  kernel = cv2.getStructuringElement(cv2.MORPH_RECT, (5,5))
-  close = cv2.morphologyEx(img, cv2.MORPH_CLOSE, kernel, iterations = 5)
+  img = cv2.morphologyEx(img, cv2.MORPH_OPEN, disk(5))
 
   return img
 
 # ESTA OK
 def binarização_melhorada(img_real):
-  kernel = cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (50, 50))
+  kernel = cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (150, 150))
   topHat = cv2.morphologyEx(img_real, cv2.MORPH_TOPHAT, kernel)
   bottomHat = cv2.morphologyEx(img_real, cv2.MORPH_BLACKHAT, kernel)
   img = img_real + topHat - bottomHat
 
-  binarizada_1 = cv2.adaptiveThreshold(img, 255, cv2.ADAPTIVE_THRESH_MEAN_C, cv2.THRESH_BINARY_INV, 1077, 5)
-  binarizada_1 = pre_processamento(binarizada_1)
+  img = cv2.equalizeHist(img)
 
-  #binarizada_2 = cv2.threshold(img, 0, 255, cv2.THRESH_BINARY + cv2.THRESH_OTSU)[1]
+  binarizada = cv2.threshold(img, 0, 255, cv2.THRESH_BINARY_INV + cv2.THRESH_OTSU)[1]
+  img_result = pre_processamento(binarizada)
 
-  return binarizada_1
+  return img_result
 
 # ESTA OK
 def preenchimento_imagem_melhorada(img_inicial):
@@ -49,36 +49,38 @@ def preenchimento_imagem_melhorada(img_inicial):
   img[0:1973, 1973:2048] = (0)
   img[1973:2048, 0:2048] = (0)
 
-  # PREECHIMENTO VERTICAL DOS PIXELS BRANCOS PARA PIXELS PRETOS
+  # PREECHIMENTO HORIZONTAL DOS PIXELS BRANCOS PARA PIXELS PRETOS
   for i in range(75, 1973):
     for j in range(75, 1973):
-      if img[j, i] == 0:
+      if img[i, j] == 0:
         break
       else:
-        img[j, i] = 0
+        img[i, j] = 0
     
     for j in reversed(range(75, 1973)):
-      if img[j, i] == 0:
+      if img[i, j] == 0:
         break
       else:
-        img[j, i] = 0
+        img[i, j] = 0
+
+  img = pre_processamento(img)
     
   return img
 
 # ESTA OK
 def operacoes_morfologicas_melhorada(img):
-  kernel = cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (5, 5))
-  img = cv2.dilate(img, kernel, iterations = 5)
+  img = cv2.morphologyEx(img, cv2.MORPH_OPEN, rectangle(20, 2))
+  img = pre_processamento(img)
 
-  cnts = cv2.findContours(img, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
-  cnts = cnts[0] if len(cnts) == 2 else cnts[1]
+  # REALIZAÇÃO DE OPERAÇÕES MORFOLÓGICAS DE FECHAMENTO
+  img = cv2.morphologyEx(img, cv2.MORPH_CLOSE, square(35))
+  img = cv2.morphologyEx(img, cv2.MORPH_CLOSE, disk(35))
 
-  for c in cnts:
-    area = cv2.contourArea(c)
-    if area < 65000:
-      cv2.drawContours(img, [c], -1, (0), -1)
+  # REALIZAÇÃO DO AJUSTE DAS REGIÕES ACIMA DAS BASES PULMONARES
+  img[0:1638, 0:2048] = cv2.dilate(img[0:1638, 0:2048], rectangle(40, 2))
+  img[0:1638, 0:2048] = cv2.dilate(img[0:1638, 0:2048], octagon(17, 17))
 
-  img = cv2.morphologyEx(img, cv2.MORPH_CLOSE, disk(55))
-  img = cv2.morphologyEx(img, cv2.MORPH_CLOSE, disk(15))
+  img = cv2.morphologyEx(img, cv2.MORPH_CLOSE, disk(25))
+  img = cv2.blur(img, (5, 5))
 
   return img

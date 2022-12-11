@@ -1,5 +1,4 @@
 from skimage.morphology import *
-from skimage.exposure import *
 import copy
 import cv2;
 
@@ -52,33 +51,33 @@ def preenchimento_imagem(img_inicial):
   img[0:2048, 1998:2048] = 0
   img[1998:2048, 0:2048] = 0
 
-  # # PREECHIMENTO DOS PIXELS BRANCOS PARA PIXELS PRETOS
-  # for i in range(50, 1998):
-  #   for j in range(50, 1998):
-  #     if img[j, i] == 0:
-  #       break
-  #     else:
-  #       img[j, i] = 0
+  # PREECHIMENTO DOS PIXELS BRANCOS PARA PIXELS PRETOS
+  for i in range(50, 1998):
+    for j in range(50, 1998):
+      if img[j, i] == 0:
+        break
+      else:
+        img[j, i] = 0
     
-  #   for j in reversed(range(50, 1998)):
-  #     if img[j, i] == 0:
-  #       break
-  #     else:
-  #       img[j, i] = 0
+    for j in reversed(range(50, 1998)):
+      if img[j, i] == 0:
+        break
+      else:
+        img[j, i] = 0
 
-  # PREECHIMENTO HORIZONTAL DOS PIXELS BRANCOS PARA PIXELS PRETOS
-  for i in range(75, 1973):
-    for j in range(75, 1973):
-      if img[i, j] == 0:
-        break
-      else:
-        img[i, j] = 0
+  # # PREECHIMENTO HORIZONTAL DOS PIXELS BRANCOS PARA PIXELS PRETOS
+  # for i in range(75, 1973):
+  #   for j in range(75, 1973):
+  #     if img[i, j] == 0:
+  #       break
+  #     else:
+  #       img[i, j] = 0
     
-    for j in reversed(range(75, 1973)):
-      if img[i, j] == 0:
-        break
-      else:
-        img[i, j] = 0
+  #   for j in reversed(range(75, 1973)):
+  #     if img[i, j] == 0:
+  #       break
+  #     else:
+  #       img[i, j] = 0
 
   return img
 
