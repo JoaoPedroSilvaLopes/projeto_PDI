@@ -1,4 +1,5 @@
 from skimage.morphology import *
+from skimage.exposure import *
 import copy
 import cv2;
 
@@ -37,8 +38,10 @@ def binarização(img_real):
   # ENCONTRANDO O LIMIAR DA BINARIZAÇÃO
   limiar_m = round(sum(grayScaleAreas) / 4)
 
+  print(limiar_m)
+
   # BINARIZAÇÃO
-  img = cv2.threshold(img, limiar_m, 255, cv2.THRESH_BINARY_INV)
+  img = cv2.threshold(img, limiar_m, 65535, cv2.THRESH_BINARY_INV)
 
   return img[1]
 

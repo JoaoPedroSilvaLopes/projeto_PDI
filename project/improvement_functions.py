@@ -8,7 +8,7 @@ def processar_imagem_melhorada(image):
   preenchida = preenchimento_imagem_melhorada(binarizada)
   imagem_final = operacoes_morfologicas_melhorada(preenchida)
 
-  return imagem_final
+  return binarizada
 
 # ESTA OK
 def pre_processamento(img):
@@ -26,13 +26,15 @@ def pre_processamento(img):
   return close
 
 # ESTA OK
-def binarização_melhorada(img_real):
+def binarização_melhorada(img_real1):
+  img_real = cv2.cvtColor(img_real1, cv2.COLOR_BGR2GRAY)
+
   kernel = cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (50, 50))
   topHat = cv2.morphologyEx(img_real, cv2.MORPH_TOPHAT, kernel)
   bottomHat = cv2.morphologyEx(img_real, cv2.MORPH_BLACKHAT, kernel)
   img = img_real + topHat - bottomHat
 
-  binarizada_1 = cv2.adaptiveThreshold(img, 255, cv2.ADAPTIVE_THRESH_MEAN_C, cv2.THRESH_BINARY_INV, 877, 5)
+  binarizada_1 = cv2.adaptiveThreshold(img, 65535, cv2.ADAPTIVE_THRESH_MEAN_C, cv2.THRESH_BINARY_INV, 877, 5)
   binarizada_1 = pre_processamento(binarizada_1)
 
   return binarizada_1
