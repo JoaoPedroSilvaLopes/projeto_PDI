@@ -81,6 +81,5 @@ def operacoes_morfologicas_melhorada(img):
   img[0:1638, 0:2048] = cv2.dilate(img[0:1638, 0:2048], octagon(17, 17))
 
   img = cv2.morphologyEx(img, cv2.MORPH_CLOSE, disk(25))
-  img = cv2.blur(img, (5, 5))
 
   return img
