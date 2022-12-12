@@ -4,14 +4,15 @@ import cv2;
 
 # ESTA OK
 def processar_imagem_melhorada(image):
-  binarizada = binarização_melhorada(image)
+  preprocessada = pre_processamento(image)
+  binarizada = binarização_melhorada(preprocessada)
   preenchida = preenchimento_imagem_melhorada(binarizada)
   imagem_final = operacoes_morfologicas_melhorada(preenchida)
 
   return imagem_final
 
 # ESTA OK
-def pre_processamento(img):
+def filtragem(img):
   # FILTRAR USANDO CONTORNOS E REMOVENDO CONTORNOS PEQUENOS
   cnts = cv2.findContours(img, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
   cnts = cnts[0] if len(cnts) == 2 else cnts[1]
@@ -26,16 +27,20 @@ def pre_processamento(img):
   return img
 
 # ESTA OK
-def binarização_melhorada(img_real):
+def pre_processamento(img):
   kernel = cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (150, 150))
-  topHat = cv2.morphologyEx(img_real, cv2.MORPH_TOPHAT, kernel)
-  bottomHat = cv2.morphologyEx(img_real, cv2.MORPH_BLACKHAT, kernel)
-  img = img_real + topHat - bottomHat
+  topHat = cv2.morphologyEx(img, cv2.MORPH_TOPHAT, kernel)
+  bottomHat = cv2.morphologyEx(img, cv2.MORPH_BLACKHAT, kernel)
+  img = img + topHat - bottomHat
 
   img = cv2.equalizeHist(img)
 
-  binarizada = cv2.threshold(img, 0, 255, cv2.THRESH_BINARY_INV + cv2.THRESH_OTSU)[1]
-  img_result = pre_processamento(binarizada)
+  return img
+
+# ESTA OK
+def binarização_melhorada(img):
+  binarizada = cv2.threshold(img, 0, 65535, cv2.THRESH_BINARY_INV + cv2.THRESH_OTSU)[1]
+  img_result = filtragem(binarizada)
 
   return img_result
 
@@ -63,14 +68,14 @@ def preenchimento_imagem_melhorada(img_inicial):
       else:
         img[i, j] = 0
 
-  img = pre_processamento(img)
+  img = filtragem(img)
     
   return img
 
 # ESTA OK
 def operacoes_morfologicas_melhorada(img):
   img = cv2.morphologyEx(img, cv2.MORPH_OPEN, rectangle(20, 2))
-  img = pre_processamento(img)
+  img = filtragem(img)
 
   # REALIZAÇÃO DE OPERAÇÕES MORFOLÓGICAS DE FECHAMENTO
   img = cv2.morphologyEx(img, cv2.MORPH_CLOSE, square(35))

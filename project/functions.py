@@ -8,7 +8,7 @@ def processar_imagem(image):
   subtraida = remocao_de_ruido(binarizada, preenchida)
   imagem_final = operacoes_morfologicas(subtraida)
 
-  return imagem_final
+  return (imagem_final).astype('uint8')
 
 def binarização(img_real):
   img = copy.deepcopy(img_real)
@@ -38,7 +38,7 @@ def binarização(img_real):
   limiar_m = round(sum(grayScaleAreas) / 4)
 
   # BINARIZAÇÃO
-  img = cv2.threshold(img, limiar_m, 255, cv2.THRESH_BINARY_INV)[1]
+  img = cv2.threshold(img, limiar_m, 65535, cv2.THRESH_BINARY)[1]
 
   return img
 
