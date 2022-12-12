@@ -1,5 +1,6 @@
 from skimage.morphology import *
-import copy
+from skimage.exposure import *
+from skimage.util import invert
 import cv2;
 
 # ESTA OK
@@ -14,20 +15,20 @@ def processar_imagem_melhorada(image):
 # ESTA OK
 def filtragem(img):
   # FILTRAR USANDO CONTORNOS E REMOVENDO CONTORNOS PEQUENOS
-  cnts = cv2.findContours(img, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
-  cnts = cnts[0] if len(cnts) == 2 else cnts[1]
+  contornos = cv2.findContours(img, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
+  contornos = contornos[0] if len(contornos) == 2 else contornos[1]
 
-  for c in cnts:
-    area = cv2.contourArea(c)
-    if area < 49000:
-      cv2.drawContours(img, [c], -1, (0), -1)
-
-  img = cv2.morphologyEx(img, cv2.MORPH_OPEN, disk(5))
+  for contorno in contornos:
+    area = cv2.contourArea(contorno)
+    if area < 55000:
+      cv2.drawContours(img, [contorno], -1, (0), -1)
 
   return img
 
 # ESTA OK
 def pre_processamento(img):
+  img = (invert(rescale_intensity(img, in_range='uint12', out_range='uint16')) / 256).astype('uint8')
+
   kernel = cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (150, 150))
   topHat = cv2.morphologyEx(img, cv2.MORPH_TOPHAT, kernel)
   bottomHat = cv2.morphologyEx(img, cv2.MORPH_BLACKHAT, kernel)
@@ -39,14 +40,14 @@ def pre_processamento(img):
 
 # ESTA OK
 def binarização_melhorada(img):
-  binarizada = cv2.threshold(img, 0, 65535, cv2.THRESH_BINARY_INV + cv2.THRESH_OTSU)[1]
-  img_result = filtragem(binarizada)
+  binarizada = cv2.threshold(img, 0, 255, cv2.THRESH_BINARY_INV + cv2.THRESH_OTSU)[1]
 
-  return img_result
+  return binarizada
 
 # ESTA OK
-def preenchimento_imagem_melhorada(img_inicial):
-  img = copy.deepcopy(img_inicial)
+def preenchimento_imagem_melhorada(img):
+  img = filtragem(img)
+  img = cv2.morphologyEx(img, cv2.MORPH_OPEN, rectangle(30, 5))
 
   # ETAPA TORNAR 75px DAS BORDAS EM PIXEIS PRETOS
   img[0:75, 0:2048] = (0)
@@ -69,14 +70,13 @@ def preenchimento_imagem_melhorada(img_inicial):
         img[i, j] = 0
 
   img = filtragem(img)
+  img = cv2.morphologyEx(img, cv2.MORPH_OPEN, rectangle(30, 5))
+  img = filtragem(img)
     
   return img
 
 # ESTA OK
 def operacoes_morfologicas_melhorada(img):
-  img = cv2.morphologyEx(img, cv2.MORPH_OPEN, rectangle(20, 2))
-  img = filtragem(img)
-
   # REALIZAÇÃO DE OPERAÇÕES MORFOLÓGICAS DE FECHAMENTO
   img = cv2.morphologyEx(img, cv2.MORPH_CLOSE, square(35))
   img = cv2.morphologyEx(img, cv2.MORPH_CLOSE, disk(35))

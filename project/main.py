@@ -1,10 +1,7 @@
 from improvement_functions import *
 from functions import *
-
-from skimage.util import invert
-from skimage.exposure import *
 import cv2;
-import numpy as np
+import numpy as np;
 
 # ARRAY DAS IMAGENS
 image_array = [
@@ -32,12 +29,16 @@ for image_name in image_array:
   ground_truth_image = cv2.threshold(ground_truth_image, 127, 255, cv2.THRESH_BINARY)[1]
 
   # CARREGAMENTO DAS IMAGENS 12 BITS E 8 BITS
-  image_12bits = np.fromfile(f'images-base/{image_name}.IMG', dtype=">i2").reshape((2048, 2048)).astype('uint16')
+  image_12bits = np.fromfile(f'project/images_base/{image_name}.IMG', dtype=">i2").reshape((2048, 2048)).astype('uint16')
   image_8bits = (invert(rescale_intensity(image_12bits, in_range='uint12', out_range='uint16')) / 256).astype('uint8')
 
   # PROCESSAR DOIS MÉTODOS 
   imagem_original = processar_imagem(image_12bits)
-  imagem_melhorada = processar_imagem_melhorada(image_8bits)
+  imagem_melhorada = processar_imagem_melhorada(image_12bits)
+
+  # SOBRESCREVER IMAGENS DE COMPARAÇÃO
+  cv2.imwrite(f'comparation/images_result_original_method/{image_name}.png', imagem_original)
+  cv2.imwrite(f'comparation/images_result_proposed_method/{image_name}.png', imagem_melhorada)
 
   # GUARDAR EM ARRAY
   final = cv2.hconcat([image_8bits, ground_truth_image, imagem_original, imagem_melhorada])
